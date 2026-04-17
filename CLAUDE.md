@@ -33,6 +33,17 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #6: Price + FX Services
+
+- Frankfurter FX conversion: `value_base = value_foreign / rate` (rate is "1 base = X foreign")
+- FX conversion has floating point precision issues — use tolerance in tests
+- `kotlin.time.Clock.System.now().toString().take(10)` gives ISO date string — quick hack
+  for getting today's date without timezone complexity
+- Ktor auto-resolved engine: just `HttpClient { }` in commonMain, no expect/actual needed
+- CoinGecko uses coin IDs (lowercase) not ticker symbols
+- PriceService routes by AssetClass: STOCK/ETF/BOND → Finnhub→Yahoo fallback, CRYPTO → CoinGecko
+- Day-level FX rate caching: ECB updates daily, no need for more frequent refreshes
+
 ### Issue #5: Import Flow (Orchestration + File Picker + UI)
 
 - `kotlinx.datetime.Clock` deprecated in 0.7.1 — use `kotlin.time.Clock` with `@OptIn(ExperimentalTime::class)`
