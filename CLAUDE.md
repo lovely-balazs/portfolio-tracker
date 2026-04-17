@@ -33,6 +33,16 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #3: Parser Framework + Lightyear CSV Parser
+
+- In-house RFC 4180 CSV parser needed (CsvParser.kt) — handles quoted fields, embedded
+  commas, escaped quotes, CRLF/LF
+- Parser pattern: BrokerParser interface → canParse(content) + parse(content) → ParseResult
+- Lightyear CSV has DD/MM/YYYY dates — `parseDdMmYyyy()` helper
+- Lightyear maps CUSTODY_FEE and FX_FEE → FEE; doesn't break out fees per trade
+- Cash transactions (DEPOSIT/WITHDRAWAL) have null ticker, null quantity — parser must handle
+- ImportedTransaction is a parser-output DTO, not the domain Transaction model
+
 ### Issue #2: Domain Models + Database Schema
 
 - SQLDelight wasmJs: use `createDefaultWebWorkerDriver()` — avoids `js()` restriction
