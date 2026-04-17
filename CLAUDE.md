@@ -33,6 +33,16 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #2: Domain Models + Database Schema
+
+- SQLDelight wasmJs: use `createDefaultWebWorkerDriver()` — avoids `js()` restriction
+- Kotlin/Wasm: `js()` calls must be top-level expressions, not inside function bodies
+- expect/actual classes produce Beta warnings in Kotlin 2.3.20 (harmless)
+- SQL reserved words: use `txn` as table name instead of `transaction`
+- Holding.fromTransactions() — proportional cost basis reduction on sells:
+  `costReduction = totalCost * (soldQty / totalQty)`
+- Tests run via `./gradlew wasmJsTest` — executes in ChromeHeadless
+
 ### Issue #1: Build Config + Dependencies
 
 - kotlin-csv doesn't support wasmJs — CSV parsing must be done in-house in commonMain
