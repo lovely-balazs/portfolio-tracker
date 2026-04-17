@@ -33,6 +33,18 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #4: IBKR Parsers (Flex XML + CSV)
+
+- xmlutil not needed — IBKR Flex XML is flat self-closing elements, regex extraction works
+- IBKR Flex: filter `levelOfDetail="EXECUTION"` to avoid double-counting (ORDER + EXECUTION)
+- IBKR Flex: sells have negative quantity — take `abs()` for the domain model
+- IBKR CSV: multi-section state machine — section name in col 0, row type in col 1
+- IBKR CSV: Financial Instrument Information section appears after Trades — need backfill
+  pass to attach ISINs to already-parsed trades
+- IBKR CSV: DataDiscriminator filtering — skip ClosedLot/OpenLot rows
+- IBKR CSV: datetime has embedded comma ("2024-01-15, 09:30:00") — RFC 4180 quoting handles it
+- IBKR dividend description format: `AAPL(US0378331005) Cash Dividend...` — regex to extract symbol
+
 ### Issue #3: Parser Framework + Lightyear CSV Parser
 
 - In-house RFC 4180 CSV parser needed (CsvParser.kt) — handles quoted fields, embedded
