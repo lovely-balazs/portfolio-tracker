@@ -27,13 +27,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
-    baseCurrency: String,
     onNavigateToImport: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
+    val baseCurrency = viewModel.baseCurrency
 
     Column(
         modifier = Modifier
@@ -72,7 +72,7 @@ fun DashboardScreen(
         // Refresh button
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
-                onClick = { scope.launch { viewModel.refreshPrices(baseCurrency) } },
+                onClick = { scope.launch { viewModel.refreshPrices() } },
                 enabled = !state.isRefreshing,
             ) {
                 if (state.isRefreshing) {

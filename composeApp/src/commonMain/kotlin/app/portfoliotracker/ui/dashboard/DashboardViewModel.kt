@@ -5,6 +5,7 @@ import app.portfoliotracker.data.pricing.FxRates
 import app.portfoliotracker.data.pricing.PriceRepository
 import app.portfoliotracker.data.pricing.RefreshOrchestrator
 import app.portfoliotracker.data.repository.InstrumentRepository
+import app.portfoliotracker.data.repository.SettingsRepository
 import app.portfoliotracker.data.repository.TransactionRepository
 import app.portfoliotracker.domain.HoldingsCalculator
 import app.portfoliotracker.domain.PortfolioSummary
@@ -18,25 +19,29 @@ class DashboardViewModel(
     private val priceRepo: PriceRepository,
     private val refreshOrchestrator: RefreshOrchestrator,
     private val fxRateService: FxRateService,
+    private val settingsRepo: SettingsRepository,
 ) {
     private val _state = MutableStateFlow(DashboardState())
     val state: StateFlow<DashboardState> = _state
 
-    fun loadDashboard(baseCurrency: String = "EUR") {
+    val baseCurrency: String get() = settingsRepo.getBaseCurrency()
+
+    fun loadDashboard() {
+        val bc = baseCurrency
         val instruments = instrumentRepo.getAll()
         val txnsByInstrument = instruments.associate { it.id to transactionRepo.getByInstrument(it.id) }
         val latestPrices = priceRepo.getAllLatestPrices().associateBy { it.instrumentId }
         val snapshots = priceRepo.getAllPortfolioSnapshots()
 
         // Use cached FX rates or empty
-        val fxRates = FxRates(base = baseCurrency, rates = emptyMap())
+        val fxRates = FxRates(base = bc, rates = emptyMap())
 
         val summary = HoldingsCalculator.calculate(
             instruments = instruments,
             transactionsByInstrument = txnsByInstrument,
             latestPrices = latestPrices,
             fxRates = fxRates,
-            baseCurrency = baseCurrency,
+            baseCurrency = bc,
         )
 
         _state.value = DashboardState(
@@ -46,11 +51,12 @@ class DashboardViewModel(
         )
     }
 
-    suspend fun refreshPrices(baseCurrency: String = "EUR") {
+    suspend fun refreshPrices() {
+        val bc = baseCurrency
         _state.value = _state.value.copy(isRefreshing = true)
         try {
-            refreshOrchestrator.refresh(baseCurrency)
-            loadDashboard(baseCurrency)
+            refreshOrchestrator.refresh(bc)
+            loadDashboard()
         } catch (e: Exception) {
             _state.value = _state.value.copy(
                 isRefreshing = false,
