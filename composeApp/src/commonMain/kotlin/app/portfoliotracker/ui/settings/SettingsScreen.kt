@@ -22,12 +22,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 private val CURRENCIES = listOf("EUR", "USD", "GBP", "HUF", "CHF", "SEK", "NOK", "DKK", "PLN", "CZK")
-private val REFRESH_OPTIONS = listOf(1, 6, 12, 24, 48, 168) // hours
+private val REFRESH_OPTIONS = listOf(1, 6, 12, 24, 48, 168)
 
 @Composable
 fun SettingsScreen(
@@ -35,6 +37,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -61,7 +64,7 @@ fun SettingsScreen(
                         DropdownMenuItem(
                             text = { Text(c) },
                             onClick = {
-                                viewModel.setBaseCurrency(c)
+                                scope.launch { viewModel.setBaseCurrency(c) }
                                 expanded = false
                             },
                         )
@@ -84,7 +87,7 @@ fun SettingsScreen(
                         DropdownMenuItem(
                             text = { Text(formatInterval(h)) },
                             onClick = {
-                                viewModel.setRefreshIntervalHours(h)
+                                scope.launch { viewModel.setRefreshIntervalHours(h) }
                                 expanded = false
                             },
                         )
@@ -100,7 +103,7 @@ fun SettingsScreen(
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = state.finnhubApiKey,
-                    onValueChange = { viewModel.setFinnhubApiKey(it) },
+                    onValueChange = { scope.launch { viewModel.setFinnhubApiKey(it) } },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Enter API key (optional)") },
                     singleLine = true,

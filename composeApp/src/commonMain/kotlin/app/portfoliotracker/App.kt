@@ -54,7 +54,7 @@ fun App(database: PortfolioDatabase) {
     val priceRepo = remember { PriceRepository(database) }
     val settingsRepo = remember { SettingsRepository(database) }
     val fxRateService = remember { FxRateService(httpClient) }
-    val finnhubClient = remember { FinnhubClient(httpClient, settingsRepo.getFinnhubApiKey()) }
+    val finnhubClient = remember { FinnhubClient(httpClient, "") }
     val yahooClient = remember { YahooFinanceClient(httpClient) }
     val coinGeckoClient = remember { CoinGeckoClient(httpClient) }
     val priceService = remember { PriceService(finnhubClient, yahooClient, coinGeckoClient, priceRepo) }

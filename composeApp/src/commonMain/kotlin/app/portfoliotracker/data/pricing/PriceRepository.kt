@@ -7,7 +7,7 @@ import kotlinx.datetime.LocalDate
 class PriceRepository(private val db: PortfolioDatabase) {
 
     @OptIn(kotlin.time.ExperimentalTime::class)
-    fun insertSnapshot(snapshot: PriceSnapshot) {
+    suspend fun insertSnapshot(snapshot: PriceSnapshot) {
         db.portfolioDatabaseQueries.insertPriceSnapshot(
             instrument_id = snapshot.instrumentId,
             date = snapshot.date.toString(),
@@ -18,17 +18,17 @@ class PriceRepository(private val db: PortfolioDatabase) {
         )
     }
 
-    fun getLatestPrice(instrumentId: String): PriceSnapshot? {
+    suspend fun getLatestPrice(instrumentId: String): PriceSnapshot? {
         return db.portfolioDatabaseQueries.selectLatestPrice(instrumentId)
             .executeAsOneOrNull()?.toDomain()
     }
 
-    fun getAllLatestPrices(): List<PriceSnapshot> {
+    suspend fun getAllLatestPrices(): List<PriceSnapshot> {
         return db.portfolioDatabaseQueries.selectAllLatestPrices()
             .executeAsList().map { it.toDomain() }
     }
 
-    fun insertPortfolioSnapshot(date: LocalDate, totalValueBase: Double, baseCurrency: String) {
+    suspend fun insertPortfolioSnapshot(date: LocalDate, totalValueBase: Double, baseCurrency: String) {
         db.portfolioDatabaseQueries.insertPortfolioSnapshot(
             date = date.toString(),
             total_value_base = totalValueBase,
@@ -36,7 +36,7 @@ class PriceRepository(private val db: PortfolioDatabase) {
         )
     }
 
-    fun getAllPortfolioSnapshots(): List<app.portfoliotracker.domain.model.PortfolioSnapshot> {
+    suspend fun getAllPortfolioSnapshots(): List<app.portfoliotracker.domain.model.PortfolioSnapshot> {
         return db.portfolioDatabaseQueries.selectAllPortfolioSnapshots()
             .executeAsList().map {
                 app.portfoliotracker.domain.model.PortfolioSnapshot(

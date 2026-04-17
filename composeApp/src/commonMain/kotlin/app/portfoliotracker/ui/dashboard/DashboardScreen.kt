@@ -18,6 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +36,7 @@ fun DashboardScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
-    val baseCurrency = viewModel.baseCurrency
+    val baseCurrency by produceState("EUR") { value = viewModel.baseCurrency() }
 
     Column(
         modifier = Modifier

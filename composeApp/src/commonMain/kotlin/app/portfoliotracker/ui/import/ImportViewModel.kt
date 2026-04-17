@@ -11,7 +11,7 @@ class ImportViewModel(
     private val _state = MutableStateFlow<ImportState>(ImportState.Idle)
     val state: StateFlow<ImportState> = _state
 
-    fun importFile(content: String) {
+    suspend fun importFile(content: String) {
         _state.value = ImportState.Importing
         try {
             val result = orchestrator.import(content)

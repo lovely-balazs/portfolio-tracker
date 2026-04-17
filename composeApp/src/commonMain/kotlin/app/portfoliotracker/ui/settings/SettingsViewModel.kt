@@ -10,7 +10,7 @@ class SettingsViewModel(
     private val _state = MutableStateFlow(SettingsState())
     val state: StateFlow<SettingsState> = _state
 
-    fun load() {
+    suspend fun load() {
         _state.value = SettingsState(
             baseCurrency = settingsRepo.getBaseCurrency(),
             refreshIntervalHours = settingsRepo.getRefreshIntervalHours(),
@@ -18,17 +18,17 @@ class SettingsViewModel(
         )
     }
 
-    fun setBaseCurrency(currency: String) {
+    suspend fun setBaseCurrency(currency: String) {
         settingsRepo.setBaseCurrency(currency)
         _state.value = _state.value.copy(baseCurrency = currency)
     }
 
-    fun setRefreshIntervalHours(hours: Int) {
+    suspend fun setRefreshIntervalHours(hours: Int) {
         settingsRepo.setRefreshIntervalHours(hours)
         _state.value = _state.value.copy(refreshIntervalHours = hours)
     }
 
-    fun setFinnhubApiKey(key: String) {
+    suspend fun setFinnhubApiKey(key: String) {
         settingsRepo.setFinnhubApiKey(key)
         _state.value = _state.value.copy(finnhubApiKey = key)
     }

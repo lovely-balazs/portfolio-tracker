@@ -24,16 +24,15 @@ class DashboardViewModel(
     private val _state = MutableStateFlow(DashboardState())
     val state: StateFlow<DashboardState> = _state
 
-    val baseCurrency: String get() = settingsRepo.getBaseCurrency()
+    suspend fun baseCurrency(): String = settingsRepo.getBaseCurrency()
 
-    fun loadDashboard() {
-        val bc = baseCurrency
+    suspend fun loadDashboard() {
+        val bc = settingsRepo.getBaseCurrency()
         val instruments = instrumentRepo.getAll()
         val txnsByInstrument = instruments.associate { it.id to transactionRepo.getByInstrument(it.id) }
         val latestPrices = priceRepo.getAllLatestPrices().associateBy { it.instrumentId }
         val snapshots = priceRepo.getAllPortfolioSnapshots()
 
-        // Use cached FX rates or empty
         val fxRates = FxRates(base = bc, rates = emptyMap())
 
         val summary = HoldingsCalculator.calculate(
@@ -52,7 +51,7 @@ class DashboardViewModel(
     }
 
     suspend fun refreshPrices() {
-        val bc = baseCurrency
+        val bc = settingsRepo.getBaseCurrency()
         _state.value = _state.value.copy(isRefreshing = true)
         try {
             refreshOrchestrator.refresh(bc)

@@ -59,6 +59,8 @@ kotlin {
         wasmJsMain.dependencies {
             implementation(libs.sqldelight.web.worker.driver)
             implementation(libs.ktor.client.js)
+            implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.3.2"))
+            implementation(npm("sql.js", "1.11.0"))
         }
     }
 }
@@ -67,6 +69,7 @@ sqldelight {
     databases {
         create("PortfolioDatabase") {
             packageName.set("app.portfoliotracker.data.database")
+            generateAsync.set(true)
         }
     }
 }

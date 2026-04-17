@@ -9,23 +9,23 @@ import kotlinx.datetime.LocalDate
 
 class TransactionRepository(private val db: PortfolioDatabase) {
 
-    fun findByImportHash(hash: String): Transaction? {
+    suspend fun findByImportHash(hash: String): Transaction? {
         return db.portfolioDatabaseQueries.selectTransactionByImportHash(hash)
             .executeAsOneOrNull()?.toDomain()
     }
 
-    fun getByInstrument(instrumentId: String): List<Transaction> {
+    suspend fun getByInstrument(instrumentId: String): List<Transaction> {
         return db.portfolioDatabaseQueries.selectTransactionsByInstrument(instrumentId)
             .executeAsList().map { it.toDomain() }
     }
 
-    fun getAll(): List<Transaction> {
+    suspend fun getAll(): List<Transaction> {
         return db.portfolioDatabaseQueries.selectAllTransactions()
             .executeAsList().map { it.toDomain() }
     }
 
     @OptIn(ExperimentalTime::class)
-    fun insert(transaction: Transaction) {
+    suspend fun insert(transaction: Transaction) {
         val now = Clock.System.now().toEpochMilliseconds()
         db.portfolioDatabaseQueries.insertTransaction(
             id = transaction.id,
@@ -43,6 +43,10 @@ class TransactionRepository(private val db: PortfolioDatabase) {
             notes = transaction.notes,
             created_at = now,
         )
+    }
+
+    suspend fun deleteByInstrument(instrumentId: String) {
+        db.portfolioDatabaseQueries.deleteTransactionsByInstrument(instrumentId)
     }
 }
 

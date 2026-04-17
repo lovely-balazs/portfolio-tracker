@@ -8,28 +8,28 @@ import kotlin.time.ExperimentalTime
 
 class InstrumentRepository(private val db: PortfolioDatabase) {
 
-    fun findByIsin(isin: String): Instrument? {
+    suspend fun findByIsin(isin: String): Instrument? {
         return db.portfolioDatabaseQueries.selectInstrumentByIsin(isin)
             .executeAsOneOrNull()?.toDomain()
     }
 
-    fun findByTickerAndCurrency(ticker: String, currency: String): Instrument? {
+    suspend fun findByTickerAndCurrency(ticker: String, currency: String): Instrument? {
         return db.portfolioDatabaseQueries.selectInstrumentByTickerAndCurrency(ticker, currency)
             .executeAsOneOrNull()?.toDomain()
     }
 
-    fun findById(id: String): Instrument? {
+    suspend fun findById(id: String): Instrument? {
         return db.portfolioDatabaseQueries.selectInstrumentById(id)
             .executeAsOneOrNull()?.toDomain()
     }
 
-    fun getAll(): List<Instrument> {
+    suspend fun getAll(): List<Instrument> {
         return db.portfolioDatabaseQueries.selectAllInstruments()
             .executeAsList().map { it.toDomain() }
     }
 
     @OptIn(ExperimentalTime::class)
-    fun insert(instrument: Instrument) {
+    suspend fun insert(instrument: Instrument) {
         val now = Clock.System.now().toEpochMilliseconds()
         db.portfolioDatabaseQueries.insertInstrument(
             id = instrument.id,
@@ -44,23 +44,20 @@ class InstrumentRepository(private val db: PortfolioDatabase) {
         )
     }
 
-    fun resolveOrCreate(
+    suspend fun resolveOrCreate(
         isin: String?,
         ticker: String?,
         name: String?,
         currency: String,
         assetClass: AssetClass = AssetClass.STOCK,
     ): Instrument {
-        // Try ISIN match first
         if (isin != null) {
             findByIsin(isin)?.let { return it }
         }
-        // Try ticker + currency match
         if (ticker != null) {
             findByTickerAndCurrency(ticker, currency)?.let { return it }
         }
 
-        // Create new
         val instrument = Instrument(
             id = generateUuid(),
             isin = isin,

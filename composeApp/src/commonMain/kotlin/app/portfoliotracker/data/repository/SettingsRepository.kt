@@ -4,28 +4,28 @@ import app.portfoliotracker.data.database.PortfolioDatabase
 
 class SettingsRepository(private val db: PortfolioDatabase) {
 
-    fun get(key: String): String? {
+    suspend fun get(key: String): String? {
         return db.portfolioDatabaseQueries.selectSetting(key)
             .executeAsOneOrNull()
     }
 
-    fun set(key: String, value: String) {
+    suspend fun set(key: String, value: String) {
         db.portfolioDatabaseQueries.upsertSetting(key, value)
     }
 
-    fun getBaseCurrency(): String = get(KEY_BASE_CURRENCY) ?: DEFAULT_BASE_CURRENCY
+    suspend fun getBaseCurrency(): String = get(KEY_BASE_CURRENCY) ?: DEFAULT_BASE_CURRENCY
 
-    fun setBaseCurrency(currency: String) = set(KEY_BASE_CURRENCY, currency)
+    suspend fun setBaseCurrency(currency: String) = set(KEY_BASE_CURRENCY, currency)
 
-    fun getRefreshIntervalHours(): Int {
+    suspend fun getRefreshIntervalHours(): Int {
         return get(KEY_REFRESH_INTERVAL)?.toIntOrNull() ?: DEFAULT_REFRESH_HOURS
     }
 
-    fun setRefreshIntervalHours(hours: Int) = set(KEY_REFRESH_INTERVAL, hours.toString())
+    suspend fun setRefreshIntervalHours(hours: Int) = set(KEY_REFRESH_INTERVAL, hours.toString())
 
-    fun getFinnhubApiKey(): String = get(KEY_FINNHUB_API_KEY) ?: ""
+    suspend fun getFinnhubApiKey(): String = get(KEY_FINNHUB_API_KEY) ?: ""
 
-    fun setFinnhubApiKey(key: String) = set(KEY_FINNHUB_API_KEY, key)
+    suspend fun setFinnhubApiKey(key: String) = set(KEY_FINNHUB_API_KEY, key)
 
     companion object {
         const val KEY_BASE_CURRENCY = "base_currency"

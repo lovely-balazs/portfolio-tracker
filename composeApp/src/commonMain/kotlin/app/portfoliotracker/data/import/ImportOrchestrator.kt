@@ -14,7 +14,7 @@ class ImportOrchestrator(
     private val instrumentRepo: InstrumentRepository,
     private val transactionRepo: TransactionRepository,
 ) {
-    fun import(content: String): ImportResult {
+    suspend fun import(content: String): ImportResult {
         // 1. Detect format
         val parser = parsers.firstOrNull { it.canParse(content) }
             ?: return ImportResult(

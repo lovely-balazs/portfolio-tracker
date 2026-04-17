@@ -46,7 +46,7 @@ class ManualEntryViewModel(
         _state.value = _state.value.copy(notes = notes)
     }
 
-    fun save(): Boolean {
+    suspend fun save(): Boolean {
         val s = _state.value
         if (s.name.isBlank()) {
             _state.value = s.copy(error = "Name is required")
@@ -95,12 +95,6 @@ class ManualEntryViewModel(
         )
         transactionRepo.insert(txn)
 
-        // If current value provided, store as a manual price snapshot
-        val currentVal = s.currentValueText.toDoubleOrNull()
-        if (currentVal != null && currentVal > 0 && qty > 0) {
-            _state.value = s.copy(savedCurrentPrice = currentVal / qty, savedInstrumentId = instrument.id)
-        }
-
         _state.value = ManualEntryState(isSaved = true)
         return true
     }
@@ -120,6 +114,4 @@ data class ManualEntryState(
     val notes: String = "",
     val error: String? = null,
     val isSaved: Boolean = false,
-    val savedCurrentPrice: Double? = null,
-    val savedInstrumentId: String? = null,
 )
