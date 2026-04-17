@@ -31,10 +31,14 @@ import app.portfoliotracker.ui.import.ImportScreen
 import app.portfoliotracker.ui.import.ImportViewModel
 import app.portfoliotracker.ui.manual.ManualEntryScreen
 import app.portfoliotracker.ui.manual.ManualEntryViewModel
+import app.portfoliotracker.platform.pickFileAndRead
 import app.portfoliotracker.ui.navigation.Screen
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import app.portfoliotracker.ui.settings.SettingsScreen
 import app.portfoliotracker.ui.settings.SettingsViewModel
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -45,6 +49,10 @@ fun App(database: PortfolioDatabase) {
         HttpClient {
             install(ContentNegotiation) {
                 json(Json { ignoreUnknownKeys = true })
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 10_000
+                connectTimeoutMillis = 5_000
             }
         }
     }
@@ -90,7 +98,11 @@ fun App(database: PortfolioDatabase) {
 
                 is Screen.Import -> ImportScreen(
                     viewModel = importVM,
-                    onPickFile = { /* Platform-specific file picker injected per platform */ },
+                    onPickFile = {
+                        pickFileAndRead { content ->
+                            MainScope().launch { importVM.importFile(content) }
+                        }
+                    },
                     onBack = {
                         importVM.reset()
                         currentScreen = Screen.Dashboard
