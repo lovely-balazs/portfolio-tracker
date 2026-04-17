@@ -1,8 +1,137 @@
--- Placeholder schema, expanded in Unit 2
+-- Instruments
+CREATE TABLE IF NOT EXISTS instrument (
+    id TEXT NOT NULL PRIMARY KEY,
+    isin TEXT,
+    ticker TEXT NOT NULL,
+    name TEXT NOT NULL,
+    asset_class TEXT NOT NULL,
+    currency TEXT NOT NULL,
+    exchange TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_instrument_isin ON instrument(isin);
+CREATE INDEX IF NOT EXISTS idx_instrument_ticker_currency ON instrument(ticker, currency);
+
+-- Transactions
+CREATE TABLE IF NOT EXISTS txn (
+    id TEXT NOT NULL PRIMARY KEY,
+    instrument_id TEXT NOT NULL REFERENCES instrument(id),
+    broker_source TEXT NOT NULL,
+    type TEXT NOT NULL,
+    date TEXT NOT NULL,
+    quantity REAL NOT NULL,
+    price_per_unit REAL NOT NULL,
+    total_amount REAL NOT NULL,
+    currency TEXT NOT NULL,
+    fee REAL NOT NULL DEFAULT 0.0,
+    fx_rate REAL,
+    import_hash TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_txn_instrument ON txn(instrument_id);
+CREATE INDEX IF NOT EXISTS idx_txn_import_hash ON txn(import_hash);
+
+-- Price snapshots (latest known price per instrument)
+CREATE TABLE IF NOT EXISTS price_snapshot (
+    instrument_id TEXT NOT NULL REFERENCES instrument(id),
+    date TEXT NOT NULL,
+    price REAL NOT NULL,
+    currency TEXT NOT NULL,
+    source TEXT NOT NULL,
+    fetched_at INTEGER NOT NULL,
+    PRIMARY KEY (instrument_id, date)
+);
+
+-- Portfolio snapshots (one row per refresh, powers accumulate-over-time chart)
+CREATE TABLE IF NOT EXISTS portfolio_snapshot (
+    date TEXT NOT NULL PRIMARY KEY,
+    total_value_base REAL NOT NULL,
+    base_currency TEXT NOT NULL
+);
+
+-- Key-value settings
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT NOT NULL PRIMARY KEY,
     value TEXT NOT NULL
 );
 
-selectAll:
+-- Instrument queries
+selectAllInstruments:
+SELECT * FROM instrument ORDER BY name;
+
+selectInstrumentById:
+SELECT * FROM instrument WHERE id = ?;
+
+selectInstrumentByIsin:
+SELECT * FROM instrument WHERE isin = ?;
+
+selectInstrumentByTickerAndCurrency:
+SELECT * FROM instrument WHERE ticker = ? AND currency = ?;
+
+insertInstrument:
+INSERT INTO instrument (id, isin, ticker, name, asset_class, currency, exchange, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateInstrument:
+UPDATE instrument SET isin = ?, ticker = ?, name = ?, asset_class = ?, currency = ?,
+    exchange = ?, updated_at = ? WHERE id = ?;
+
+deleteInstrument:
+DELETE FROM instrument WHERE id = ?;
+
+-- Transaction queries
+selectTransactionsByInstrument:
+SELECT * FROM txn WHERE instrument_id = ? ORDER BY date;
+
+selectAllTransactions:
+SELECT * FROM txn ORDER BY date DESC;
+
+selectTransactionByImportHash:
+SELECT * FROM txn WHERE import_hash = ?;
+
+insertTransaction:
+INSERT INTO txn (id, instrument_id, broker_source, type, date, quantity, price_per_unit,
+    total_amount, currency, fee, fx_rate, import_hash, notes, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteTransaction:
+DELETE FROM txn WHERE id = ?;
+
+deleteTransactionsByInstrument:
+DELETE FROM txn WHERE instrument_id = ?;
+
+-- Price snapshot queries
+selectLatestPrice:
+SELECT * FROM price_snapshot WHERE instrument_id = ? ORDER BY date DESC LIMIT 1;
+
+selectAllLatestPrices:
+SELECT ps.* FROM price_snapshot ps
+INNER JOIN (
+    SELECT instrument_id, MAX(date) AS max_date FROM price_snapshot GROUP BY instrument_id
+) latest ON ps.instrument_id = latest.instrument_id AND ps.date = latest.max_date;
+
+insertPriceSnapshot:
+INSERT OR REPLACE INTO price_snapshot (instrument_id, date, price, currency, source, fetched_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Portfolio snapshot queries
+selectAllPortfolioSnapshots:
+SELECT * FROM portfolio_snapshot ORDER BY date;
+
+insertPortfolioSnapshot:
+INSERT OR REPLACE INTO portfolio_snapshot (date, total_value_base, base_currency)
+VALUES (?, ?, ?);
+
+-- Settings queries
+selectSetting:
+SELECT value FROM settings WHERE key = ?;
+
+upsertSetting:
+INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);
+
+selectAllSettings:
 SELECT * FROM settings;
