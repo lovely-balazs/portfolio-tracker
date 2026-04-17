@@ -33,6 +33,14 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #7: Dashboard + Charts
+
+- `String.format()` not available in wasmJs — need custom `formatDecimal()` in commonMain
+- Koala Plot charts deferred to polish phase — text-based placeholders work for MVP
+- HoldingsCalculator is a pure function (no DB access) — easy to test
+- Holdings sorted by base-currency value descending for display
+- FX conversion tolerance: use `abs(actual - expected) < threshold` in tests
+
 ### Issue #6: Price + FX Services
 
 - Frankfurter FX conversion: `value_base = value_foreign / rate` (rate is "1 base = X foreign")
