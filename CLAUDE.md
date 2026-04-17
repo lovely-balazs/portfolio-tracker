@@ -33,6 +33,22 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #8: Settings + Manual Entry + Background Refresh
+
+- SQLDelight `selectSetting` on `SELECT value FROM settings WHERE key = ?` returns `String?`
+  directly (single TEXT column) — no wrapper type needed
+- Manual assets get ticker format `MANUAL-NAME-SLUG` — PriceService naturally skips them
+  since they're not STOCK/ETF/CRYPTO asset classes
+- expect/actual BackgroundRefresh: WorkManager on Android (needs network constraint),
+  `setInterval`/`clearInterval` via `@JsFun` on wasmJs, no-op stub on iOS
+- iOS BackgroundRefresh requires BGTaskScheduler + Info.plist config — stub for MVP
+- WorkManager RefreshWorker needs WorkerFactory DI for coroutine/DI integration —
+  stub for MVP, signals success only
+- App.kt wires full DI manually: database created per platform, passed to App() composable
+- `remember { }` for all repositories and view models in App.kt — prevents re-creation
+  on recomposition
+- `LaunchedEffect(currentScreen)` triggers dashboard reload when navigating back
+
 ### Issue #7: Dashboard + Charts
 
 - `String.format()` not available in wasmJs — need custom `formatDecimal()` in commonMain
