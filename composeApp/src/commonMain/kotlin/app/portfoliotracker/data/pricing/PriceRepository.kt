@@ -1,7 +1,12 @@
 package app.portfoliotracker.data.pricing
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.portfoliotracker.data.database.PortfolioDatabase
 import app.portfoliotracker.domain.model.PriceSnapshot
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDate
 
 class PriceRepository(private val db: PortfolioDatabase) {
@@ -20,12 +25,12 @@ class PriceRepository(private val db: PortfolioDatabase) {
 
     suspend fun getLatestPrice(instrumentId: String): PriceSnapshot? {
         return db.portfolioDatabaseQueries.selectLatestPrice(instrumentId)
-            .executeAsOneOrNull()?.toDomain()
+            .asFlow().mapToOneOrNull(Dispatchers.Default).first()?.toDomain()
     }
 
     suspend fun getAllLatestPrices(): List<PriceSnapshot> {
         return db.portfolioDatabaseQueries.selectAllLatestPrices()
-            .executeAsList().map { it.toDomain() }
+            .asFlow().mapToList(Dispatchers.Default).first().map { it.toDomain() }
     }
 
     suspend fun insertPortfolioSnapshot(date: LocalDate, totalValueBase: Double, baseCurrency: String) {
@@ -38,7 +43,7 @@ class PriceRepository(private val db: PortfolioDatabase) {
 
     suspend fun getAllPortfolioSnapshots(): List<app.portfoliotracker.domain.model.PortfolioSnapshot> {
         return db.portfolioDatabaseQueries.selectAllPortfolioSnapshots()
-            .executeAsList().map {
+            .asFlow().mapToList(Dispatchers.Default).first().map {
                 app.portfoliotracker.domain.model.PortfolioSnapshot(
                     date = LocalDate.parse(it.date),
                     totalValueBase = it.total_value_base,

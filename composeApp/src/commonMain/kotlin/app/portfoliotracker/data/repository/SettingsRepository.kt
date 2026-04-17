@@ -1,12 +1,16 @@
 package app.portfoliotracker.data.repository
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.portfoliotracker.data.database.PortfolioDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 
 class SettingsRepository(private val db: PortfolioDatabase) {
 
     suspend fun get(key: String): String? {
         return db.portfolioDatabaseQueries.selectSetting(key)
-            .executeAsOneOrNull()
+            .asFlow().mapToOneOrNull(Dispatchers.Default).first()
     }
 
     suspend fun set(key: String, value: String) {

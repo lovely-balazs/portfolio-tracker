@@ -1,8 +1,13 @@
 package app.portfoliotracker.data.repository
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.portfoliotracker.data.database.PortfolioDatabase
 import app.portfoliotracker.domain.model.Transaction
 import app.portfoliotracker.domain.model.TransactionType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.datetime.LocalDate
@@ -11,17 +16,17 @@ class TransactionRepository(private val db: PortfolioDatabase) {
 
     suspend fun findByImportHash(hash: String): Transaction? {
         return db.portfolioDatabaseQueries.selectTransactionByImportHash(hash)
-            .executeAsOneOrNull()?.toDomain()
+            .asFlow().mapToOneOrNull(Dispatchers.Default).first()?.toDomain()
     }
 
     suspend fun getByInstrument(instrumentId: String): List<Transaction> {
         return db.portfolioDatabaseQueries.selectTransactionsByInstrument(instrumentId)
-            .executeAsList().map { it.toDomain() }
+            .asFlow().mapToList(Dispatchers.Default).first().map { it.toDomain() }
     }
 
     suspend fun getAll(): List<Transaction> {
         return db.portfolioDatabaseQueries.selectAllTransactions()
-            .executeAsList().map { it.toDomain() }
+            .asFlow().mapToList(Dispatchers.Default).first().map { it.toDomain() }
     }
 
     @OptIn(ExperimentalTime::class)

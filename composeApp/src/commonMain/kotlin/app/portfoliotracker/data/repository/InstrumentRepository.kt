@@ -1,8 +1,13 @@
 package app.portfoliotracker.data.repository
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.portfoliotracker.data.database.PortfolioDatabase
 import app.portfoliotracker.domain.model.AssetClass
 import app.portfoliotracker.domain.model.Instrument
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -10,22 +15,22 @@ class InstrumentRepository(private val db: PortfolioDatabase) {
 
     suspend fun findByIsin(isin: String): Instrument? {
         return db.portfolioDatabaseQueries.selectInstrumentByIsin(isin)
-            .executeAsOneOrNull()?.toDomain()
+            .asFlow().mapToOneOrNull(Dispatchers.Default).first()?.toDomain()
     }
 
     suspend fun findByTickerAndCurrency(ticker: String, currency: String): Instrument? {
         return db.portfolioDatabaseQueries.selectInstrumentByTickerAndCurrency(ticker, currency)
-            .executeAsOneOrNull()?.toDomain()
+            .asFlow().mapToOneOrNull(Dispatchers.Default).first()?.toDomain()
     }
 
     suspend fun findById(id: String): Instrument? {
         return db.portfolioDatabaseQueries.selectInstrumentById(id)
-            .executeAsOneOrNull()?.toDomain()
+            .asFlow().mapToOneOrNull(Dispatchers.Default).first()?.toDomain()
     }
 
     suspend fun getAll(): List<Instrument> {
         return db.portfolioDatabaseQueries.selectAllInstruments()
-            .executeAsList().map { it.toDomain() }
+            .asFlow().mapToList(Dispatchers.Default).first().map { it.toDomain() }
     }
 
     @OptIn(ExperimentalTime::class)
