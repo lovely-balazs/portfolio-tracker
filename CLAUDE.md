@@ -33,6 +33,17 @@ KMP Compose Multiplatform app — tracks holdings across brokers in a single das
 
 Things discovered while implementing. Add new entries at the top.
 
+### Issue #5: Import Flow (Orchestration + File Picker + UI)
+
+- `kotlinx.datetime.Clock` deprecated in 0.7.1 — use `kotlin.time.Clock` with `@OptIn(ExperimentalTime::class)`
+- `@JsFun` in wasmJs needs `@OptIn(kotlin.js.ExperimentalWasmJsInterop::class)`
+- `crypto.randomUUID()` available in wasmJs via `@JsFun` for UUID generation
+- FileKit 0.13.0 API: `PlatformFile` based, not `openFilePicker()` — decouple file
+  picking from screen composable via callback parameter
+- Import hash: simple polynomial string hash (`31 * hash + charCode`) — deterministic,
+  cross-platform, no crypto dependency
+- Instrument resolution order: ISIN match → ticker+currency match → create new
+
 ### Issue #4: IBKR Parsers (Flex XML + CSV)
 
 - xmlutil not needed — IBKR Flex XML is flat self-closing elements, regex extraction works
